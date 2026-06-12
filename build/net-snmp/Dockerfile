@@ -52,6 +52,7 @@ RUN set -eux; \
     loader_name="$(basename "$loader")"; \
     mkdir -p /out/lib; \
     cp -a /opt/net-snmp/lib/. /out/lib/; \
+    cp -a /usr/lib/libcrypto.so.* /usr/lib/libssl.so.* /out/lib/; \
     for command in snmpget snmpwalk; do \
       cp "/opt/net-snmp/bin/$command" "/out/$command.bin"; \
       LD_LIBRARY_PATH=/opt/net-snmp/lib lddtree -l "/opt/net-snmp/bin/$command" \
