@@ -17,17 +17,15 @@ permissions:
 jobs:
   build-binary:
     name: Build Net-SNMP for ${{ matrix.platform_key }}
-    runs-on: ${{ matrix.runner }}
+    runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
         include:
           - platform: linux/amd64
             platform_key: linux-x64
-            runner: ubuntu-latest
           - platform: linux/arm64
             platform_key: linux-arm64
-            runner: ubuntu-24.04-arm
 
     steps:
       - name: Checkout module
