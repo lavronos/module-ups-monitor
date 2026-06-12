@@ -8,6 +8,10 @@ All notable changes to the LavronOS UPS module are documented here.
 - Moved the module into an independent repository and release lifecycle.
 - Bundled architecture-specific `snmpget` and `snmpwalk` runtimes inside the module ZIP.
 - Added reproducible Net-SNMP 5.9.5.2 builds for `linux-x64` and `linux-arm64`.
+- Switched ARM64 package builds to GitHub's native Ubuntu ARM runner.
+
+### Fixed
+- Included the Net-SNMP shared libraries required by the bundled `snmpget` and `snmpwalk` executables.
 
 ## [0.1.4] - 2026-06-08
 
