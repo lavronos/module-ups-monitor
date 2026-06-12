@@ -1,0 +1,56 @@
+{
+  "id": "ups-monitor",
+  "name": "UPS",
+  "label": "UPS",
+  "version": "0.1.5",
+  "latestVersion": "0.1.5",
+  "description": "Adds UPS telemetry from Synology UPS-MIB or DSM WebAPI.",
+  "summary": "Monitors UPS battery, runtime, power, alarms and event history through Synology.",
+  "author": "LavronOS",
+  "authorUrl": "https://lavronos.com",
+  "min_lavronos_version": "0.13.0",
+  "max_lavronos_version": null,
+  "category": "system",
+  "categoryLabel": "System",
+  "license": "MIT",
+  "icon": "shieldCheck",
+  "href": "/ups",
+  "capabilities": ["Synology UPS-MIB", "DSM WebAPI fallback", "Battery and runtime", "Input and output power", "Alarms and events", "Telegram actions"],
+  "systemDependencies": ["snmp"],
+  "dependencies": {
+    "binaries": {
+      "snmpwalk": {
+        "linux-x64": "bin/linux-x64/snmpwalk",
+        "linux-arm64": "bin/linux-arm64/snmpwalk"
+      },
+      "snmpget": {
+        "linux-x64": "bin/linux-x64/snmpget",
+        "linux-arm64": "bin/linux-arm64/snmpget"
+      }
+    }
+  },
+  "runtime": {
+    "page": {"type": "iframe", "path": "page.html", "minHeight": 760},
+    "dashboardWidgets": {
+      "status": {"type": "iframe", "path": "dashboard.html", "minHeight": 340}
+    }
+  },
+  "runtimeData": {
+    "endpoints": [
+      {"label": "UPS status", "url": "/api/synology/ups"}
+    ]
+  },
+  "dashboardWidgets": [
+    {
+      "id": "status",
+      "title": "UPS",
+      "description": "UPS battery, runtime, input power and alarms.",
+      "icon": "shieldCheck",
+      "runtime": {"type": "iframe", "path": "dashboard.html", "minHeight": 340}
+    }
+  ],
+  "telegramActions": [
+    {"id": "ups.status", "label": "UPS status", "description": "Shows UPS battery, runtime and alarms.", "requiredCapabilities": ["Battery and runtime"]}
+  ],
+  "changelog": ["0.1.5 - Moved the module into an independent repository and bundled portable snmpwalk and snmpget binaries.", "0.1.4 - Moved Net-SNMP tools out of the base LavronOS image.", "0.1.3 - Added UPS Telegram actions and normalized DSM telemetry."]
+}
