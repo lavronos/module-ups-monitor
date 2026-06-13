@@ -2,6 +2,17 @@
 
 All notable changes to the LavronOS UPS module are documented here.
 
+## [Unreleased]
+
+## [0.1.6] - 2026-06-13
+
+### Added
+- Added a module-owned server runtime entry for UPS status requests.
+
+### Changed
+- Removed direct WordPress uploads from the release workflow; Marketplace now synchronizes published GitHub Releases.
+- Included the server runtime in release ZIP packages.
+
 ## [0.1.5] - 2026-06-12
 
 ### Changed
