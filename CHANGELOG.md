@@ -4,6 +4,15 @@ All notable changes to the LavronOS UPS module are documented here.
 
 ## [Unreleased]
 
+## [0.1.7] - 2026-06-14
+
+### Changed
+- Replaced raw UPS payloads with battery, runtime, input/output power, alarm and event views.
+- Added a clear setup screen that links to the Synology connection settings used by UPS.
+
+### Fixed
+- Added separate connection hints for unreachable Synology hosts and invalid monitoring credentials.
+
 ## [0.1.6] - 2026-06-13
 
 ### Added

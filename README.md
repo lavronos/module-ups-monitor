@@ -3,7 +3,10 @@
 Independent LavronOS module for UPS telemetry exposed through Synology
 UPS-MIB or DSM WebAPI.
 
-The module owns its page, dashboard widget and server runtime. Its portable
+The module owns its page, dashboard widget and server runtime. Its runtime
+page shows battery charge, estimated runtime, input/output power, alarms and
+recent events. If Synology monitoring is not configured, it links directly to
+the Synology settings used as the UPS data source. Its portable
 Net-SNMP binaries are resolved from the installed module package.
 
 The release workflow builds this module's own portable Net-SNMP 5.9.5.2
@@ -20,9 +23,9 @@ GitHub Release ZIP. Release history is maintained in
 Create a release with a tag matching `module.json`, for example:
 
 ```bash
-git tag -a v0.1.6 -m "Release UPS module 0.1.6"
+git tag -a v0.1.7 -m "Release UPS module 0.1.7"
 git push origin main
-git push origin v0.1.6
+git push origin v0.1.7
 ```
 
 Generated binaries, third-party runtime files and release ZIPs are not stored

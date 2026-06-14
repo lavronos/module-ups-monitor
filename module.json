@@ -2,8 +2,8 @@
   "id": "ups-monitor",
   "name": "UPS",
   "label": "UPS",
-  "version": "0.1.6",
-  "latestVersion": "0.1.6",
+  "version": "0.1.7",
+  "latestVersion": "0.1.7",
   "description": "Adds UPS telemetry from Synology UPS-MIB or DSM WebAPI.",
   "summary": "Monitors UPS battery, runtime, power, alarms and event history through Synology.",
   "author": "LavronOS",
@@ -52,5 +52,5 @@
   "telegramActions": [
     {"id": "ups.status", "label": "UPS status", "description": "Shows UPS battery, runtime and alarms.", "requiredCapabilities": ["Battery and runtime"]}
   ],
-  "changelog": ["0.1.6 - Added a module-owned server runtime hook.", "0.1.5 - Moved the module into an independent repository and bundled portable snmpwalk and snmpget binaries.", "0.1.4 - Moved Net-SNMP tools out of the base LavronOS image.", "0.1.3 - Added UPS Telegram actions and normalized DSM telemetry."]
+  "changelog": ["0.1.7 - Added a product UPS dashboard, Synology setup guidance and precise diagnostics.", "0.1.6 - Added a module-owned server runtime hook.", "0.1.5 - Moved the module into an independent repository and bundled portable snmpwalk and snmpget binaries.", "0.1.4 - Moved Net-SNMP tools out of the base LavronOS image.", "0.1.3 - Added UPS Telegram actions and normalized DSM telemetry."]
 }
