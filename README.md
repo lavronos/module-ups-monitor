@@ -8,6 +8,9 @@ page shows battery charge, estimated runtime, input/output power, alarms and
 recent events. If Synology monitoring is not configured, it links directly to
 the Synology settings used as the UPS data source. Its portable
 Net-SNMP binaries are resolved from the installed module package.
+The module page restores the complete LavronOS v0.11 monitoring layout with
+summary metrics, battery and output panels, input and bypass power details,
+configuration values, alarms, event history and raw UPS diagnostics.
 
 The release workflow builds this module's own portable Net-SNMP 5.9.5.2
 `snmpget` and `snmpwalk` runtimes for `linux-x64` and `linux-arm64`, verifies
@@ -23,9 +26,9 @@ GitHub Release ZIP. Release history is maintained in
 Create a release with a tag matching `module.json`, for example:
 
 ```bash
-git tag -a v0.1.7 -m "Release UPS module 0.1.7"
+git tag -a v0.1.8 -m "Release UPS module 0.1.8"
 git push origin main
-git push origin v0.1.7
+git push origin v0.1.8
 ```
 
 Generated binaries, third-party runtime files and release ZIPs are not stored

@@ -12,6 +12,15 @@
   }
 
   function renderShell(manifest) {
+    if (mode === "dashboard") {
+      root.innerHTML = `
+        <main id="module-content">
+          <div class="module-loading module-loading--compact"><span class="spinner"></span>Получаю данные UPS...</div>
+        </main>
+      `;
+      return;
+    }
+
     root.innerHTML = `
       <header class="module-heading">
         <div class="min-width-0">
@@ -57,12 +66,38 @@
     const identity = data.identity || {};
     const input = data.input || {};
     const output = data.output || {};
+    const bypass = data.bypass || {};
+    const config = data.config || {};
     const inputLine = Array.isArray(input.lines) ? input.lines[0] || {} : {};
     const outputLine = Array.isArray(output.lines) ? output.lines[0] || {} : {};
+    const bypassLine = Array.isArray(bypass.lines) ? bypass.lines[0] || {} : {};
     const alarms = Array.isArray(data.alarms) ? data.alarms : [];
     const events = Array.isArray(data.events) ? data.events : [];
+    const rawMetrics = Array.isArray(data.rawMetrics) ? data.rawMetrics.filter((row) => row?.value !== null && row?.value !== undefined && String(row.value).trim()) : [];
     const statusTone = ["on_battery", "low_battery", "depleted"].includes(data.status) ? "warning" : data.status === "offline" ? "critical" : "healthy";
     const name = identity.name || identity.model || "UPS";
+    const powerPanels = [
+      powerPanel("Входная сеть", `${input.lineCount || 1} линий`, [
+        ["Ошибки линии", input.lineBads],
+        ["Напряжение сети", formatUnit(inputLine.voltageVolts, "В")],
+        ["Частота сети", formatUnit(inputLine.frequencyHz ?? input.frequencyHz, "Гц")],
+        ["Входной ток", formatUnit(inputLine.currentAmps, "А")],
+        ["Входная мощность", formatUnit(inputLine.truePowerWatts, "Вт")]
+      ]),
+      powerPanel("Bypass", `${bypass.lineCount || 1} линий`, [
+        ["Напряжение bypass", formatUnit(bypassLine.voltageVolts, "В")],
+        ["Частота bypass", formatUnit(bypassLine.frequencyHz ?? bypass.frequencyHz, "Гц")],
+        ["Ток bypass", formatUnit(bypassLine.currentAmps, "А")],
+        ["Мощность bypass", formatUnit(bypassLine.powerWatts, "Вт")]
+      ]),
+      powerPanel("Конфигурация", sourceLabel(data), [
+        ["Номинал входа", formatUnit(config.inputVoltageVolts, "В")],
+        ["Номинал выхода", formatUnit(config.outputVoltageVolts, "В")],
+        ["Номинальная мощность", formatUnit(config.outputVoltAmps, "ВА")],
+        ["Порог low battery", formatUnit(config.lowBatteryMinutes, "мин")],
+        ["Звук", config.audibleStatusLabel]
+      ])
+    ].filter(Boolean);
 
     if (mode === "dashboard") {
       content.innerHTML = `
@@ -83,24 +118,16 @@
 
     content.innerHTML = `
       ${(data.warnings || []).length ? `<div class="notice">${escapeHtml(data.warnings.map((warning) => warning.message).filter(Boolean).join(" "))}</div>` : ""}
-      <section class="ups-hero">
-        <div class="ups-icon"><span class="ups-icon__fill" style="height:${normalizePercent(battery.chargePercent)}%"></span><strong>${escapeHtml(formatPercent(battery.chargePercent))}</strong></div>
-        <div class="min-width-0">
-          <div class="hero-status"><span class="status status--${statusTone}"><span></span>${escapeHtml(statusLabel(data))}</span><span class="source-pill">${escapeHtml(sourceLabel(data))}</span></div>
-          <h2>${escapeHtml(name)}</h2>
-          <p>${escapeHtml([identity.manufacturer, identity.model].filter(Boolean).join(" · ") || "Источник бесперебойного питания")}</p>
-          <div class="hero-meta"><span>Synology: ${escapeHtml(data.synologyHost || "подключён")}</span><span>Обновлено: ${escapeHtml(formatDate(data.lastUpdated))}</span></div>
-        </div>
-      </section>
-
       <section class="metric-grid">
-        ${metric("Заряд", formatPercent(battery.chargePercent), battery.statusLabel || "Батарея", statusTone === "healthy" ? "green" : "amber")}
-        ${metric("Осталось", formatRuntime(battery.estimatedMinutesRemaining), battery.secondsOnBattery ? `${formatDuration(battery.secondsOnBattery)} на батарее` : "Расчёт UPS", "blue")}
-        ${metric("Нагрузка", formatPercent(outputLine.loadPercent), output.sourceLabel || "Выход", "violet")}
-        ${metric("Аварии", String(data.alarmsPresent ?? alarms.length), alarms.length ? "Требуют внимания" : "Активных нет", alarms.length ? "amber" : "green")}
+        ${metric("Статус", statusLabel(data), sourceLabel(data), statusTone === "healthy" ? "green" : "amber", "⌁")}
+        ${metric("Заряд", formatPercent(battery.chargePercent), battery.statusLabel || "Батарея", statusTone === "healthy" ? "green" : "amber", "▰")}
+        ${metric("Осталось", formatRuntime(battery.estimatedMinutesRemaining), battery.secondsOnBattery ? `${formatDuration(battery.secondsOnBattery)} на батарее` : "Расчёт UPS", "blue", "◷")}
+        ${metric("Нагрузка", formatPercent(outputLine.loadPercent), output.sourceLabel || "Выход", "violet", "ϟ")}
+        ${metric("Напряжение сети", formatUnit(inputLine.voltageVolts, "В") || "Нет данных", "Вход", "blue", "⌁")}
+        ${metric("Аварии", String(data.alarmsPresent ?? alarms.length), alarms.length ? "Требуют внимания" : "Активных нет", alarms.length ? "amber" : "green", "!")}
       </section>
 
-      <section class="content-grid">
+      <section class="content-grid content-grid--primary">
         <article class="panel panel--battery">
           <div class="panel-heading"><div><p class="module-eyebrow">Батарея</p><h2>${escapeHtml(battery.statusLabel || statusLabel(data))}</h2></div><strong>${escapeHtml(formatPercent(battery.chargePercent))}</strong></div>
           <div class="battery-bar battery-bar--large"><span style="width:${normalizePercent(battery.chargePercent)}%"></span></div>
@@ -112,17 +139,20 @@
           </div>
         </article>
 
-        <article class="panel">
+        <article class="panel panel--output">
           <div class="panel-heading"><div><p class="module-eyebrow">Электропитание</p><h2>${escapeHtml(output.sourceLabel || "Выход UPS")}</h2></div></div>
-          <dl class="detail-list">
-            ${detail("Входное напряжение", formatUnit(inputLine.voltageVolts, "В"))}
-            ${detail("Входная частота", formatUnit(inputLine.frequencyHz, "Гц"))}
-            ${detail("Выходное напряжение", formatUnit(outputLine.voltageVolts, "В"))}
-            ${detail("Выходная мощность", formatUnit(outputLine.powerWatts, "Вт"))}
-            ${detail("Выходная частота", formatUnit(output.frequencyHz, "Гц"))}
-          </dl>
+          <div class="detail-grid">
+            ${detailTile("Выходное напряжение", formatUnit(outputLine.voltageVolts, "В"))}
+            ${detailTile("Выходная частота", formatUnit(output.frequencyHz, "Гц"))}
+            ${detailTile("Выходной ток", formatUnit(outputLine.currentAmps, "А"))}
+            ${detailTile("Выходная мощность", formatUnit(outputLine.powerWatts, "Вт"))}
+          </div>
         </article>
+      </section>
 
+      ${powerPanels.length ? `<section class="power-grid">${powerPanels.join("")}</section>` : ""}
+
+      <section class="content-grid content-grid--events">
         <article class="panel">
           <div class="panel-heading"><div><p class="module-eyebrow">Аварии</p><h2>${alarms.length ? `${alarms.length} активно` : "Всё спокойно"}</h2></div></div>
           <div class="list">${renderAlarms(alarms)}</div>
@@ -132,6 +162,11 @@
           <div class="panel-heading"><div><p class="module-eyebrow">Журнал</p><h2>Последние события</h2></div></div>
           <div class="list">${renderEvents(events)}</div>
         </article>
+      </section>
+
+      <section class="panel raw-panel">
+        <div class="panel-heading"><div><p class="module-eyebrow">Диагностика</p><h2>Raw UPS</h2><p class="panel-subtitle">${rawMetrics.length} метрик / ${escapeHtml(sourceLabel(data))}</p></div></div>
+        ${renderRawMetrics(rawMetrics)}
       </section>
     `;
   }
@@ -177,8 +212,27 @@
     return events.slice(0, 8).map((event) => `<div class="list-row"><span class="event-dot event-dot--${escapeAttribute(event.severity || "info")}"></span><div class="min-width-0"><strong>${escapeHtml(event.message || event.statusLabel || "UPS")}</strong><span>${escapeHtml(formatDate(event.createdAt))}</span></div></div>`).join("");
   }
 
-  function metric(label, value, detail, tone) {
-    return `<article class="metric metric--${tone}"><span>${escapeHtml(label)}</span><strong>${escapeHtml(value)}</strong><small>${escapeHtml(detail)}</small></article>`;
+  function renderRawMetrics(rows) {
+    if (!rows.length) return '<div class="empty">Raw-метрики пока недоступны.</div>';
+    return `
+      <div class="raw-table-wrap">
+        <table class="raw-table">
+          <thead><tr><th>Метрика</th><th>Значение</th></tr></thead>
+          <tbody>
+            ${rows.map((row) => `
+              <tr>
+                <td><strong>${escapeHtml(row.label || row.oid || "Metric")}</strong>${row.oid && row.oid !== row.label ? `<span>${escapeHtml(row.oid)}</span>` : ""}</td>
+                <td>${escapeHtml(formatRawValue(row.value))}</td>
+              </tr>
+            `).join("")}
+          </tbody>
+        </table>
+      </div>
+    `;
+  }
+
+  function metric(label, value, detail, tone, icon) {
+    return `<article class="metric metric--${tone}"><span class="metric-icon">${escapeHtml(icon)}</span><div class="min-width-0"><span class="metric-label">${escapeHtml(label)}</span><strong>${escapeHtml(value)}</strong><small>${escapeHtml(detail)}</small></div></article>`;
   }
 
   function detail(label, value) {
@@ -189,6 +243,17 @@
   function detailTile(label, value) {
     if (!value) return "";
     return `<div class="detail-tile"><span>${escapeHtml(label)}</span><strong>${escapeHtml(value)}</strong></div>`;
+  }
+
+  function powerPanel(title, subtitle, rows) {
+    const available = rows.filter(([, value]) => value !== null && value !== undefined && String(value).trim() && value !== "Нет данных");
+    if (!available.length) return "";
+    return `
+      <article class="panel">
+        <div class="panel-heading"><div><p class="module-eyebrow">${escapeHtml(subtitle)}</p><h2>${escapeHtml(title)}</h2></div><span class="panel-icon">⌁</span></div>
+        <dl class="detail-list">${available.map(([label, value]) => detail(label, String(value))).join("")}</dl>
+      </article>
+    `;
   }
 
   async function requestJson(url, fallback) {
@@ -258,6 +323,18 @@
     if (!value) return "Нет данных";
     const date = new Date(value);
     return Number.isNaN(date.getTime()) ? String(value) : date.toLocaleString("ru-RU", { day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" });
+  }
+
+  function formatRawValue(value) {
+    if (value === null || value === undefined) return "";
+    if (typeof value === "object") {
+      try {
+        return JSON.stringify(value);
+      } catch {
+        return String(value);
+      }
+    }
+    return String(value);
   }
 
   function escapeHtml(value) {

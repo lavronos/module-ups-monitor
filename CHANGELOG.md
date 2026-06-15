@@ -4,6 +4,13 @@ All notable changes to the LavronOS UPS module are documented here.
 
 ## [Unreleased]
 
+## [0.1.8] - 2026-06-15
+
+### Fixed
+- Restored the complete v0.11 UPS page inside the module package, including
+  power panels, alarms, events and raw diagnostic metrics.
+- Centered metric and connection icons on both axes.
+
 ## [0.1.7] - 2026-06-14
 
 ### Changed
